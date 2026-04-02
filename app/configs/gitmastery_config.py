@@ -1,11 +1,14 @@
 import json
+import os
+import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Self, Type, Optional, Union
 
 from app.configs.utils import read_config
 
-GITMASTERY_CONFIG_NAME = ".gitmastery.json"
+GITMASTERY_FOLDER_NAME = ".gitmastery"
+GITMASTERY_CONFIG_NAME = "config.json"
 
 
 @dataclass
@@ -67,12 +70,12 @@ class GitMasteryConfig:
         )
 
     def write(self) -> None:
-        with open(self.path / GITMASTERY_CONFIG_NAME, "w") as exercise_config_file:
+        with open(self.path / GITMASTERY_FOLDER_NAME / GITMASTERY_CONFIG_NAME, "w") as exercise_config_file:
             exercise_config_file.write(self.to_json())
 
     @classmethod
     def read(cls: Type[Self], path: Path, cds: int) -> Self:
-        raw_config = read_config(path, GITMASTERY_CONFIG_NAME)
+        raw_config = read_config(path / GITMASTERY_FOLDER_NAME, GITMASTERY_CONFIG_NAME)
 
         exercises_source_raw = raw_config.get("exercises_source", {})
         exercises_source = GitMasteryConfig.ExercisesSource.from_raw(exercises_source_raw)
@@ -89,3 +92,18 @@ class GitMasteryConfig:
 GIT_MASTERY_EXERCISES_SOURCE = GitMasteryConfig.ExercisesSource.from_raw(
     {"type": "remote", "username": "git-mastery", "repository": "exercises", "branch": "main"}
 )
+
+
+def migrate_to_gitmastery_folder(root: Path) -> None:
+    from app.utils.cli import rmtree
+
+    gitmastery_dir = root / GITMASTERY_FOLDER_NAME
+    gitmastery_dir.mkdir(exist_ok=True)
+    shutil.copy2(root / ".gitmastery.json", gitmastery_dir / GITMASTERY_CONFIG_NAME)
+    shutil.copy2(root / ".gitmastery.log", gitmastery_dir / "gitmastery.log")
+    if (root / "progress").is_dir():
+        shutil.copytree(root / "progress", gitmastery_dir / "progress")
+    os.remove(root / ".gitmastery.json")
+    os.remove(root / ".gitmastery.log")
+    if (root / "progress").is_dir():
+        rmtree(root / "progress")

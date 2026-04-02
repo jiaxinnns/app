@@ -3,11 +3,11 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 
-def find_root(filename: str) -> Optional[Tuple[Path, int]]:
+def find_root(filename: str, folder: str = ".") -> Optional[Tuple[Path, int]]:
     current = Path.cwd()
     steps = 0
     for parent in [current] + list(current.parents):
-        if (parent / filename).is_file():
+        if (parent / folder / filename).is_file():
             return parent, steps
         steps += 1
 

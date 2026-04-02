@@ -3,10 +3,10 @@ from typing import Any, Callable, Dict, Tuple
 
 import click
 
-from app.configs.gitmastery_config import GITMASTERY_CONFIG_NAME, GitMasteryConfig
+from app.configs.gitmastery_config import GITMASTERY_CONFIG_NAME, GITMASTERY_FOLDER_NAME, GitMasteryConfig, migrate_to_gitmastery_folder
 from app.configs.utils import find_root
 from app.hooks.utils import generate_cds_string
-from app.utils.click import CliContextKey, error
+from app.utils.click import CliContextKey, error, warn
 
 
 def in_gitmastery_root(
@@ -18,12 +18,17 @@ def in_gitmastery_root(
         def wrapper(
             ctx: click.Context, *args: Tuple[Any, ...], **kwargs: Dict[str, Any]
         ) -> Any:
-            root = find_root(GITMASTERY_CONFIG_NAME)
+            root = find_root(GITMASTERY_CONFIG_NAME, folder=GITMASTERY_FOLDER_NAME)
             if root is None:
-                error(
-                    f"You are not in a Git-Mastery root folder. Navigate to an appropriate folder or use "
-                    f"{click.style('gitmastery setup', bold=True, italic=True)}"
-                )
+                old_root = find_root(".gitmastery.json")
+                if old_root is None:
+                    error(
+                        f"You are not in a Git-Mastery root folder. Navigate to an appropriate folder or use "
+                        f"{click.style('gitmastery setup', bold=True, italic=True)}"
+                    )
+                migrate_to_gitmastery_folder(old_root[0])
+                warn("Migrated your Git-Mastery metadata to .gitmastery/ folder.")
+                root = find_root(GITMASTERY_CONFIG_NAME, folder=GITMASTERY_FOLDER_NAME)
 
             path, cds = root
             config = GitMasteryConfig.read(path, cds)

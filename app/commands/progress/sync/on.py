@@ -79,10 +79,10 @@ def on() -> None:
             info(
                 f"Clone failed, retrying (attempt {attempt + 1}/{NUM_RETRIES}) in {sleep_duration}s..."
             )
-            rmtree(PROGRESS_LOCAL_FOLDER_NAME)
+            rmtree(progress_dir)
             time.sleep(sleep_duration)
-        clone_with_custom_name(f"{username}/{fork_name}", PROGRESS_LOCAL_FOLDER_NAME)
-        if os.path.exists(os.path.join(PROGRESS_LOCAL_FOLDER_NAME, ".git")):
+        clone_with_custom_name(f"{username}/{fork_name}", str(progress_dir))
+        if os.path.exists(os.path.join(progress_dir, ".git")):
             cloned = True
             break
 

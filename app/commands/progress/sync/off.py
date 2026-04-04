@@ -47,13 +47,14 @@ def off() -> None:
     config.progress_remote = False
     config.write()
 
+    progress_dir = config.metadata_dir / PROGRESS_LOCAL_FOLDER_NAME
+    local_progress_filepath = progress_dir / "progress.json"
     local_progress = []
-    local_progress_filepath = os.path.join(PROGRESS_LOCAL_FOLDER_NAME, "progress.json")
     with open(local_progress_filepath, "r") as file:
         local_progress = json.load(file)
 
-    rmtree(PROGRESS_LOCAL_FOLDER_NAME)
-    os.makedirs(os.path.dirname(local_progress_filepath), exist_ok=True)
+    rmtree(progress_dir)
+    os.makedirs(progress_dir, exist_ok=True)
 
     # Re-create just the progress folder
     with open(local_progress_filepath, "a") as progress_file:

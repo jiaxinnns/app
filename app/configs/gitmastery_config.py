@@ -9,6 +9,7 @@ from app.configs.utils import read_config
 
 GITMASTERY_FOLDER_NAME = ".gitmastery"
 GITMASTERY_CONFIG_NAME = "config.json"
+GITMASTERY_LOG_NAME = "gitmastery.log"
 
 
 @dataclass
@@ -60,6 +61,10 @@ class GitMasteryConfig:
     path: Path
     cds: int
 
+    @property
+    def metadata_dir(self) -> Path:
+        return self.path / GITMASTERY_FOLDER_NAME
+
     def to_json(self) -> str:
         return json.dumps(
             self,
@@ -95,15 +100,22 @@ GIT_MASTERY_EXERCISES_SOURCE = GitMasteryConfig.ExercisesSource.from_raw(
 
 
 def migrate_to_gitmastery_folder(root: Path) -> None:
+    from app.commands.progress.constants import PROGRESS_LOCAL_FOLDER_NAME
     from app.utils.cli import rmtree
 
     gitmastery_dir = root / GITMASTERY_FOLDER_NAME
     gitmastery_dir.mkdir(exist_ok=True)
     shutil.copy2(root / ".gitmastery.json", gitmastery_dir / GITMASTERY_CONFIG_NAME)
-    shutil.copy2(root / ".gitmastery.log", gitmastery_dir / "gitmastery.log")
-    if (root / "progress").is_dir():
-        shutil.copytree(root / "progress", gitmastery_dir / "progress")
+    legacy_log = root / ".gitmastery.log"
+    new_log = gitmastery_dir / GITMASTERY_LOG_NAME
+    if legacy_log.exists():
+        shutil.copy2(legacy_log, new_log)
+    else:
+        new_log.touch()
+    if (root / PROGRESS_LOCAL_FOLDER_NAME).is_dir() and not (gitmastery_dir / PROGRESS_LOCAL_FOLDER_NAME).exists():
+        shutil.copytree(root / PROGRESS_LOCAL_FOLDER_NAME, gitmastery_dir / PROGRESS_LOCAL_FOLDER_NAME)
     os.remove(root / ".gitmastery.json")
-    os.remove(root / ".gitmastery.log")
-    if (root / "progress").is_dir():
-        rmtree(root / "progress")
+    if legacy_log.exists():
+        os.remove(legacy_log)
+    if (root / PROGRESS_LOCAL_FOLDER_NAME).is_dir():
+        rmtree(root / PROGRESS_LOCAL_FOLDER_NAME)

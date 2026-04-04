@@ -19,7 +19,7 @@ def show() -> None:
     if not config.progress_local:
         error("You do not have progress tracking supported.")
 
-    if not os.path.isdir(config.path / PROGRESS_LOCAL_FOLDER_NAME):
+    if not os.path.isdir(config.metadata_dir / PROGRESS_LOCAL_FOLDER_NAME):
         error(
             f"Something strange has occurred, try to recreate the Git-Mastery exercise directory using {click.style('gitmastery setup', bold=True, italic=True)}"
         )
@@ -27,7 +27,7 @@ def show() -> None:
     if config.progress_remote:
         invoke_command(github)
 
-    progress_file_path = config.path / PROGRESS_LOCAL_FOLDER_NAME / "progress.json"
+    progress_file_path = config.metadata_dir / PROGRESS_LOCAL_FOLDER_NAME / "progress.json"
     all_progress = []
     if os.path.isfile(progress_file_path):
         with open(progress_file_path, "r") as file:

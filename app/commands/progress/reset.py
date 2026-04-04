@@ -92,13 +92,13 @@ def reset() -> None:
                 )
             )
 
-    if not os.path.isdir(gitmastery_config.path / PROGRESS_LOCAL_FOLDER_NAME):
+    if not os.path.isdir(gitmastery_config.metadata_dir / PROGRESS_LOCAL_FOLDER_NAME):
         warn(
             f"Progress directory is missing. Set it up again using {click.style('gitmastery progress setup', bold=True, italic=True)}"
         )
         sys.exit(0)
 
-    os.chdir(gitmastery_config.path / PROGRESS_LOCAL_FOLDER_NAME)
+    os.chdir(gitmastery_config.metadata_dir / PROGRESS_LOCAL_FOLDER_NAME)
     if not os.path.isfile("progress.json"):
         warn("Progress tracking file not created yet. No progress to reset.")
         return

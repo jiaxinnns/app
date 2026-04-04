@@ -92,7 +92,7 @@ def on() -> None:
             file.write(json.dumps(local_progress, indent=2))
         raise RuntimeError(
             f"Clone failed for {progress_dir}. "
-            "Your local progress has been restored."
+            "Your local progress has been restored. "
             "Re-run the command `gitmastery progress sync on` to try again."
         )
 

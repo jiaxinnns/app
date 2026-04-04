@@ -14,6 +14,15 @@ from app.hooks.utils import generate_cds_string
 from app.utils.click import CliContextKey, error, warn
 
 
+MIGRATION_FAILURE_MESSAGE = (
+    "Failed to automatically migrate your Git-Mastery metadata to the .gitmastery/ folder. "
+    "Please manually create .gitmastery/ and move: "
+    ".gitmastery.json → .gitmastery/config.json, "
+    ".gitmastery.log → .gitmastery/gitmastery.log, "
+    "progress/ → .gitmastery/progress/."
+)
+
+
 def in_gitmastery_root(
     must: bool = False,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
@@ -38,17 +47,9 @@ def in_gitmastery_root(
                         GITMASTERY_CONFIG_NAME, folder=METADATA_FOLDER_NAME
                     )
                 except Exception:
-                    error(
-                        "Failed to automatically migrate your Git-Mastery metadata to the .gitmastery/ folder. "
-                        "Please manually move your .gitmastery.json, .gitmastery.log, and progress/ folder into "
-                        "a .gitmastery/ folder in your exercises root directory."
-                    )
+                    error(MIGRATION_FAILURE_MESSAGE)
                 if root is None:
-                    error(
-                        "Failed to automatically migrate your Git-Mastery metadata to the .gitmastery/ folder. "
-                        "Please manually move your .gitmastery.json, .gitmastery.log, and progress/ folder into "
-                        "a .gitmastery/ folder in your exercises root directory."
-                    )
+                    error(MIGRATION_FAILURE_MESSAGE)
 
             path, cds = root
             config = GitMasteryConfig.read(path, cds)

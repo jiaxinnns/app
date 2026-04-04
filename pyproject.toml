@@ -35,5 +35,8 @@ dev = [
     "types-requests==2.33.0.20260402",
 ]
 
+[tool.mypy]
+python_version = "3.13"
+
 [tool.uv]
 package = false

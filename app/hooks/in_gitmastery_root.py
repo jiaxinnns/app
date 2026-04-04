@@ -5,9 +5,9 @@ import click
 
 from app.configs.gitmastery_config import (
     GITMASTERY_CONFIG_NAME,
-    GITMASTERY_FOLDER_NAME,
+    METADATA_FOLDER_NAME,
     GitMasteryConfig,
-    migrate_to_gitmastery_folder,
+    migrate_gitmastery_metadata,
 )
 from app.configs.utils import find_root
 from app.hooks.utils import generate_cds_string
@@ -23,7 +23,7 @@ def in_gitmastery_root(
         def wrapper(
             ctx: click.Context, *args: Tuple[Any, ...], **kwargs: Dict[str, Any]
         ) -> Any:
-            root = find_root(GITMASTERY_CONFIG_NAME, folder=GITMASTERY_FOLDER_NAME)
+            root = find_root(GITMASTERY_CONFIG_NAME, folder=METADATA_FOLDER_NAME)
             if root is None:
                 old_root = find_root(".gitmastery.json")
                 if old_root is None:
@@ -32,10 +32,10 @@ def in_gitmastery_root(
                         f"{click.style('gitmastery setup', bold=True, italic=True)}"
                     )
                 try:
-                    migrate_to_gitmastery_folder(old_root[0])
+                    migrate_gitmastery_metadata(old_root[0])
                     warn("Migrated your Git-Mastery metadata to .gitmastery/ folder.")
                     root = find_root(
-                        GITMASTERY_CONFIG_NAME, folder=GITMASTERY_FOLDER_NAME
+                        GITMASTERY_CONFIG_NAME, folder=METADATA_FOLDER_NAME
                     )
                 except Exception:
                     error(

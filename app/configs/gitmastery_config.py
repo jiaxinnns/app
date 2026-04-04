@@ -7,7 +7,7 @@ from typing import Self, Type, Optional, Union
 
 from app.configs.utils import read_config
 
-GITMASTERY_FOLDER_NAME = ".gitmastery"
+METADATA_FOLDER_NAME = ".gitmastery"
 GITMASTERY_CONFIG_NAME = "config.json"
 GITMASTERY_LOG_NAME = "gitmastery.log"
 
@@ -29,17 +29,26 @@ class GitMasteryConfig:
             if self.type == "local":
                 raise ValueError("to_url only valid for remote ExercisesSource")
             if not self.username or not self.repository:
-                raise ValueError("Username and repository are both required for remote ExercisesSource")
+                raise ValueError(
+                    "Username and repository are both required for remote ExercisesSource"
+                )
             return f"https://github.com/{self.username}/{self.repository}.git"
 
         @classmethod
-        def from_raw(cls, raw: Union["GitMasteryConfig.ExercisesSource", dict, None]) -> "GitMasteryConfig.ExercisesSource":
+        def from_raw(
+            cls, raw: Union["GitMasteryConfig.ExercisesSource", dict, None]
+        ) -> "GitMasteryConfig.ExercisesSource":
             # Pass-through if already the correct instance
             if isinstance(raw, cls):
                 return raw
             # Default remote
             if raw is None:
-                return cls(type="remote", username="git-mastery", repository="exercises", branch="main")
+                return cls(
+                    type="remote",
+                    username="git-mastery",
+                    repository="exercises",
+                    branch="main",
+                )
             if isinstance(raw, dict):
                 typ = raw.get("type")
                 if typ == "local":
@@ -53,7 +62,6 @@ class GitMasteryConfig:
                 )
             raise ValueError("Unsupported exercises_source shape")
 
-
     progress_local: bool
     progress_remote: bool
     exercises_source: ExercisesSource
@@ -63,7 +71,7 @@ class GitMasteryConfig:
 
     @property
     def metadata_dir(self) -> Path:
-        return self.path / GITMASTERY_FOLDER_NAME
+        return self.path / METADATA_FOLDER_NAME
 
     def to_json(self) -> str:
         return json.dumps(
@@ -75,15 +83,19 @@ class GitMasteryConfig:
         )
 
     def write(self) -> None:
-        with open(self.path / GITMASTERY_FOLDER_NAME / GITMASTERY_CONFIG_NAME, "w") as exercise_config_file:
+        with open(
+            self.path / METADATA_FOLDER_NAME / GITMASTERY_CONFIG_NAME, "w"
+        ) as exercise_config_file:
             exercise_config_file.write(self.to_json())
 
     @classmethod
     def read(cls: Type[Self], path: Path, cds: int) -> Self:
-        raw_config = read_config(path / GITMASTERY_FOLDER_NAME, GITMASTERY_CONFIG_NAME)
+        raw_config = read_config(path / METADATA_FOLDER_NAME, GITMASTERY_CONFIG_NAME)
 
         exercises_source_raw = raw_config.get("exercises_source", {})
-        exercises_source = GitMasteryConfig.ExercisesSource.from_raw(exercises_source_raw)
+        exercises_source = GitMasteryConfig.ExercisesSource.from_raw(
+            exercises_source_raw
+        )
 
         return cls(
             path=path,
@@ -95,15 +107,20 @@ class GitMasteryConfig:
 
 
 GIT_MASTERY_EXERCISES_SOURCE = GitMasteryConfig.ExercisesSource.from_raw(
-    {"type": "remote", "username": "git-mastery", "repository": "exercises", "branch": "main"}
+    {
+        "type": "remote",
+        "username": "git-mastery",
+        "repository": "exercises",
+        "branch": "main",
+    }
 )
 
 
-def migrate_to_gitmastery_folder(root: Path) -> None:
+def migrate_gitmastery_metadata(root: Path) -> None:
     from app.commands.progress.constants import PROGRESS_LOCAL_FOLDER_NAME
     from app.utils.cli import rmtree
 
-    gitmastery_dir = root / GITMASTERY_FOLDER_NAME
+    gitmastery_dir = root / METADATA_FOLDER_NAME
     gitmastery_dir.mkdir(exist_ok=True)
     shutil.copy2(root / ".gitmastery.json", gitmastery_dir / GITMASTERY_CONFIG_NAME)
     legacy_log = root / ".gitmastery.log"
@@ -112,8 +129,13 @@ def migrate_to_gitmastery_folder(root: Path) -> None:
         shutil.copy2(legacy_log, new_log)
     else:
         new_log.touch()
-    if (root / PROGRESS_LOCAL_FOLDER_NAME).is_dir() and not (gitmastery_dir / PROGRESS_LOCAL_FOLDER_NAME).exists():
-        shutil.copytree(root / PROGRESS_LOCAL_FOLDER_NAME, gitmastery_dir / PROGRESS_LOCAL_FOLDER_NAME)
+    if (root / PROGRESS_LOCAL_FOLDER_NAME).is_dir() and not (
+        gitmastery_dir / PROGRESS_LOCAL_FOLDER_NAME
+    ).exists():
+        shutil.copytree(
+            root / PROGRESS_LOCAL_FOLDER_NAME,
+            gitmastery_dir / PROGRESS_LOCAL_FOLDER_NAME,
+        )
     os.remove(root / ".gitmastery.json")
     if legacy_log.exists():
         os.remove(legacy_log)

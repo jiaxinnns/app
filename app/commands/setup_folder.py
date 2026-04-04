@@ -5,7 +5,7 @@ import click
 
 from app.commands.check.git import git
 from app.commands.progress.constants import PROGRESS_LOCAL_FOLDER_NAME
-from app.configs.gitmastery_config import GITMASTERY_FOLDER_NAME
+from app.configs.gitmastery_config import METADATA_FOLDER_NAME
 from app.utils.click import error, info, invoke_command, prompt
 
 
@@ -36,8 +36,12 @@ def setup() -> None:
     os.chdir(directory_path)
 
     info("Setting up your local progress tracker...")
-    os.makedirs(os.path.join(GITMASTERY_FOLDER_NAME, PROGRESS_LOCAL_FOLDER_NAME), exist_ok=True)
-    with open(os.path.join(GITMASTERY_FOLDER_NAME, "config.json"), "w") as gitmastery_file:
+    os.makedirs(
+        os.path.join(METADATA_FOLDER_NAME, PROGRESS_LOCAL_FOLDER_NAME), exist_ok=True
+    )
+    with open(
+        os.path.join(METADATA_FOLDER_NAME, "config.json"), "w"
+    ) as gitmastery_file:
         gitmastery_file.write(
             json.dumps(
                 {
@@ -52,7 +56,10 @@ def setup() -> None:
             )
         )
 
-    with open(os.path.join(GITMASTERY_FOLDER_NAME, PROGRESS_LOCAL_FOLDER_NAME, "progress.json"), "a") as progress_file:
+    with open(
+        os.path.join(METADATA_FOLDER_NAME, PROGRESS_LOCAL_FOLDER_NAME, "progress.json"),
+        "a",
+    ) as progress_file:
         progress_file.write(json.dumps([], indent=2))
 
     info(
